@@ -6,11 +6,11 @@ from typing import List, Dict, Optional
 # 1. CONFIGURACIÓN VISUAL Y ESTILOS (CSS)
 # ==========================================
 
-st.set_page_config(page_title="ProGym Engine v3.0", page_icon="🏋️‍♂️", layout="wide")
+st.set_page_config(page_title="ProGym Engine v4.0", page_icon="🏋️‍♂️", layout="wide")
 
 st.markdown("""
 <style>
-    .block-container-card {
+    .block-card {
         padding: 1.2rem;
         border-radius: 10px;
         margin-bottom: 1rem;
@@ -18,7 +18,7 @@ st.markdown("""
         background-color: #1E1E1E;
         color: white;
     }
-    .block-a { border-left-color: #3498db; background-color: #0f1b29; }
+    .block-warmup { border-left-color: #f1c40f; background-color: #26230f; }
     .block-b { border-left-color: #e74c3c; background-color: #291010; }
     .block-c { border-left-color: #f39c12; background-color: #291d0f; }
     .block-d { border-left-color: #9b59b6; background-color: #200f29; }
@@ -39,20 +39,53 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 2. MODELOS DE DATOS Y BASE EXPANDIDA
+# 2. MODELOS DE DATOS Y ESTADO GLOBAL
 # ==========================================
 
 @dataclass
 class Ejercicio:
     id: str
     nombre: str
-    bloque: str  # Bloque A (Movilidad/Pliometría), Bloque B (Principales), Bloque C (Secundarios), Bloque D (Accesorios)
+    bloque: str  # Warm-Up, Bloque B, Bloque C, Bloque D
     patron_movimiento: str
     musculo_principal: str
     musculos_accesorios: List[str]
     equipamiento: str
-    estres_articular: int  # 1 (Bajo) a 5 (Alto)
+    estres_articular: int  # 1 a 5
+    url_video: str = ""
     es_atletico: bool = False
+
+# Inicializar Base de Datos Persistente en la Sesión
+if "base_ejercicios" not in st.session_state:
+    st.session_state.base_ejercicios = [
+        # --- WARM-UP & MOVILIDAD OBLIGATORIO ---
+        Ejercicio("W1", "Gato-Camello (Cat-Cow)", "Warm-Up", "Movilidad Columna", "Zona Media", [], "Peso Corporal", 1, "https://www.youtube.com/watch?v=kqnua4rHVVA"),
+        Ejercicio("W2", "World's Greatest Stretch", "Warm-Up", "Movilidad Cadera", "Cadera/Isquios", ["Core"], "Peso Corporal", 1, "https://www.youtube.com/watch?v=vV1p24vLuh4"),
+        Ejercicio("W3", "Dislocaciones de Hombro", "Warm-Up", "Movilidad Hombros", "Manguito Rotador", [], "Banda elástica", 1, "https://www.youtube.com/watch?v=33P5AI27eiU"),
+        Ejercicio("W4", "Rotación Torácica Quadrupedal", "Warm-Up", "Movilidad Torácica", "Espalda Alta", [], "Peso Corporal", 1, "https://www.youtube.com/watch?v=d_kXpW_QpNA"),
+        Ejercicio("W5", "Saltos Pliométricos al Cajón", "Warm-Up", "Potencia / Pliometría", "Tren Inferior", [], "Peso Corporal", 2, "https://www.youtube.com/watch?v=52r_Ul5k03g", es_atletico=True),
+
+        # --- BLOQUE B: PRINCIPALES ---
+        Ejercicio("B1", "Press de Banca con Barra", "Bloque B", "Empuje Horizontal", "Pectoral", ["Tríceps"], "Barra", 4, "https://www.youtube.com/watch?v=rT7DgCr-3pg"),
+        Ejercicio("B2", "Sentadilla Trasera con Barra", "Bloque B", "Dominante de Rodilla", "Cuádriceps", ["Glúteo"], "Barra", 5, "https://www.youtube.com/watch?v=ultWZbUMPL8"),
+        Ejercicio("B3", "Peso Muerto Convencional", "Bloque B", "Dominante de Cadera", "Isquiosurales", ["Glúteo"], "Barra", 5, "https://www.youtube.com/watch?v=op9kVnSso6Q"),
+        Ejercicio("B4", "Press Militar con Barra", "Bloque B", "Empuje Vertical", "Deltoides", ["Tríceps"], "Barra", 4, "https://www.youtube.com/watch?v=2yjwXTZQDDI"),
+        Ejercicio("B5", "Dominadas Prona Lastradas", "Bloque B", "Tracción Vertical", "Dorsal", ["Bíceps"], "Peso Corporal", 4, "https://www.youtube.com/watch?v=eGo4IYlbE5g"),
+        Ejercicio("B6", "Power Clean", "Bloque B", "Potencia Olímipica", "Cadena Posterior", ["Trapecios"], "Barra", 5, "https://www.youtube.com/watch?v=KwYJTpQ_xg5", es_atletico=True),
+
+        # --- BLOQUE C: SECUNDARIOS ---
+        Ejercicio("C1", "Press Inclinado con Mancuernas", "Bloque C", "Empuje Horizontal", "Pectoral", ["Tríceps"], "Mancuernas", 3, "https://www.youtube.com/watch?v=8iPEnn-ltC8"),
+        Ejercicio("C2", "Prensa de Piernas 45°", "Bloque C", "Dominante de Rodilla", "Cuádriceps", ["Glúteo"], "Máquina", 2, "https://www.youtube.com/watch?v=IZxyjW7MPJQ"),
+        Ejercicio("C3", "Peso Muerto Rumano con Mancuernas", "Bloque C", "Dominante de Cadera", "Isquiosurales", ["Glúteo"], "Mancuernas", 3, "https://www.youtube.com/watch?v=JCXUYuzwNrM"),
+        Ejercicio("C4", "Jalón al Pecho Agarre Neutro", "Bloque C", "Tracción Vertical", "Dorsal", ["Bíceps"], "Polea", 2, "https://www.youtube.com/watch?v=CAwf7n6Luuc"),
+        Ejercicio("C5", "Zancadas Búlgaras", "Bloque C", "Dominante Unilateral", "Cuádriceps", ["Glúteo"], "Mancuernas", 3, "https://www.youtube.com/watch?v=2C-uNgKwPLE", es_atletico=True),
+
+        # --- BLOQUE D: ACCESORIOS ---
+        Ejercicio("D1", "Elevaciones Laterales con Mancuerna", "Bloque D", "Aislamiento", "Deltoides", [], "Mancuernas", 1, "https://www.youtube.com/watch?v=3VcKaXpzqRo"),
+        Ejercicio("D2", "Extensiones de Tríceps en Polea", "Bloque D", "Aislamiento", "Tríceps", [], "Polea", 1, "https://www.youtube.com/watch?v=vB5OHsJ3EME"),
+        Ejercicio("D3", "Curl de Bíceps Inclinado", "Bloque D", "Aislamiento", "Bíceps", [], "Mancuernas", 1, "https://www.youtube.com/watch?v=soxrZlIl35U"),
+        Ejercicio("D4", "Face Pull con Cuerda", "Bloque D", "Salud Articular", "Deltoides", ["Manguito Rotador"], "Polea", 1, "https://www.youtube.com/watch?v=rep-qVOkqgk"),
+    ]
 
 @dataclass
 class PerfilAtleta:
@@ -64,139 +97,90 @@ class PerfilAtleta:
     equipamiento_disponible: List[str] = field(default_factory=list)
 
     def evaluar_wellness(self, sueno: int, estres: int, agujetas: int, fatiga: int) -> float:
-        sueno_norm = min(max(sueno, 1), 5)
-        estres_norm = 6 - min(max(estres, 1), 5)
-        agujetas_norm = 6 - min(max(agujetas, 1), 5)
-        fatiga_norm = 6 - min(max(fatiga, 1), 5)
-        return round((sueno_norm + estres_norm + agujetas_norm + fatiga_norm) / 4.0, 2)
-
-BASE_EJERCICIOS: List[Ejercicio] = [
-    # --- BLOQUE A: MOVILIDAD, ACTIVACIÓN Y PLIOMETRÍA (DEPORTISTAS) ---
-    Ejercicio("A1", "Gato-Camello", "Bloque A", "Movilidad Columna", "Zona Media", [], "Peso Corporal", 1),
-    Ejercicio("A2", "Rotación Torácica Quadrupedal", "Bloque A", "Movilidad Torácica", "Espalda Alta", [], "Peso Corporal", 1),
-    Ejercicio("A3", "World's Greatest Stretch", "Bloque A", "Movilidad Cadera", "Cadera/Isquios", ["Core"], "Peso Corporal", 1),
-    Ejercicio("A4", "Dislocaciones de Hombro", "Bloque A", "Movilidad Hombros", "Manguito Rotador", [], "Banda elástica", 1),
-    Ejercicio("A5", "Saltos Pliométricos al Cajón", "Bloque A", "Potencia / Pliometría", "Tren Inferior", ["Core"], "Peso Corporal", 2, es_atletico=True),
-    Ejercicio("A6", "Lanzamiento de Balón Medicinal Balístico", "Bloque A", "Potencia / Pliometría", "Tren Superior", ["Core"], "Peso Corporal", 2, es_atletico=True),
-
-    # --- BLOQUE B: EJERCICIOS PRINCIPALES Y DE POTENCIA ---
-    Ejercicio("B1", "Press de Banca con Barra", "Bloque B", "Empuje Horizontal", "Pectoral", ["Tríceps", "Deltoides Ant"], "Barra", 4),
-    Ejercicio("B2", "Sentadilla Trasera con Barra", "Bloque B", "Dominante de Rodilla", "Cuádriceps", ["Glúteo"], "Barra", 5),
-    Ejercicio("B3", "Peso Muerto Convencional", "Bloque B", "Dominante de Cadera", "Isquiosurales", ["Glúteo", "Espalda Baja"], "Barra", 5),
-    Ejercicio("B4", "Press Militar con Barra", "Bloque B", "Empuje Vertical", "Deltoides", ["Tríceps"], "Barra", 4),
-    Ejercicio("B5", "Dominadas Prona Lastradas", "Bloque B", "Tracción Vertical", "Dorsal", ["Bíceps"], "Peso Corporal", 4),
-    Ejercicio("B6", "Power Clean (Cargada de Potencia)", "Bloque B", "Potencia Olímipica", "Cadena Posterior", ["Trapies", "Cuádriceps"], "Barra", 5, es_atletico=True),
-    Ejercicio("B7", "Press Landmine Explosivo", "Bloque B", "Empuje Unilateral", "Deltoides", ["Pectoral", "Core"], "Barra", 2, es_atletico=True),
-
-    # --- BLOQUE C: EJERCICIOS SECUNDARIOS ---
-    Ejercicio("C1", "Press Inclinado con Mancuernas", "Bloque C", "Empuje Horizontal", "Pectoral", ["Tríceps"], "Mancuernas", 3),
-    Ejercicio("C2", "Prensa de Piernas 45°", "Bloque C", "Dominante de Rodilla", "Cuádriceps", ["Glúteo"], "Máquina", 2),
-    Ejercicio("C3", "Peso Muerto Rumano con Mancuernas", "Bloque C", "Dominante de Cadera", "Isquiosurales", ["Glúteo"], "Mancuernas", 3),
-    Ejercicio("C4", "Jalón al Pecho Agarre Neutro", "Bloque C", "Tracción Vertical", "Dorsal", ["Bíceps"], "Polea", 2),
-    Ejercicio("C5", "Remo Horizontal con Mancuerna", "Bloque C", "Tracción Horizontal", "Dorsal", ["Romboide", "Bíceps"], "Mancuernas", 2),
-    Ejercicio("C6", "Zancadas Búlgaras", "Bloque C", "Dominante Unilateral", "Cuádriceps", ["Glúteo"], "Mancuernas", 3, es_atletico=True),
-
-    # --- BLOQUE D: ACCESORIOS Y AISLAMIENTO ---
-    Ejercicio("D1", "Elevaciones Laterales con Mancuerna", "Bloque D", "Aislamiento", "Deltoides", [], "Mancuernas", 1),
-    Ejercicio("D2", "Extensiones de Tríceps en Polea Alta", "Bloque D", "Aislamiento", "Tríceps", [], "Polea", 1),
-    Ejercicio("D3", "Curl de Bíceps Inclinado", "Bloque D", "Aislamiento", "Bíceps", [], "Mancuernas", 1),
-    Ejercicio("D4", "Face Pull con Cuerda", "Bloque D", "Salud Articular", "Deltoides", ["Manguito Rotador"], "Polea", 1),
-    Ejercicio("D5", "Rueda Abdominal (Ab Wheel)", "Bloque D", "Core", "Zona Media", [], "Peso Corporal", 3, es_atletico=True),
-]
+        return round(((min(max(sueno, 1), 5)) + (6 - min(max(estres, 1), 5)) + (6 - min(max(agujetas, 1), 5)) + (6 - min(max(fatiga, 1), 5))) / 4.0, 2)
 
 # ==========================================
-# 3. MOTOR Y LÓGICA DE NEGOCIO AVANZADA
+# 3. MOTOR Y LÓGICA DE NEGOCIO
 # ==========================================
 
 class MotorEntrenamiento:
 
     @staticmethod
     def obtener_parametros_objetivo(objetivo: str) -> Dict[str, str]:
-        if objetivo == "Hipertrofia":
-            return {"reps_b": "6-10", "reps_c": "8-12", "reps_d": "12-15", "rir_base": 1, "factor_volumen": 1.0}
-        elif objetivo == "Pérdida de Grasa / Definición":
-            return {"reps_b": "8-10", "reps_c": "10-12", "reps_d": "12-15", "rir_base": 1, "factor_volumen": 0.85}
-        elif objetivo == "Rendimiento Deportivo / Performance":
-            return {"reps_b": "3-5 (Explosivas)", "reps_c": "6-8", "reps_d": "8-10", "rir_base": 2, "factor_volumen": 1.0}
-        else:  # Mantenimiento
-            return {"reps_b": "8-10", "reps_c": "10-12", "reps_d": "10-12", "rir_base": 2, "factor_volumen": 0.7}
+        if objetivo == "Hipertrofia": return {"reps_b": "6-10", "reps_c": "8-12", "reps_d": "12-15", "rir_base": 1, "factor_volumen": 1.0}
+        elif objetivo == "Pérdida de Grasa / Definición": return {"reps_b": "8-10", "reps_c": "10-12", "reps_d": "12-15", "rir_base": 1, "factor_volumen": 0.85}
+        elif objetivo == "Rendimiento Deportivo / Performance": return {"reps_b": "3-5 (Explosivas)", "reps_c": "6-8", "reps_d": "8-10", "rir_base": 2, "factor_volumen": 1.0}
+        else: return {"reps_b": "8-10", "reps_c": "10-12", "reps_d": "10-12", "rir_base": 2, "factor_volumen": 0.7}
 
     @staticmethod
     def filtrar_patrones_por_rutina(tipo_rutina: str, sub_dia: str) -> List[str]:
-        if tipo_rutina == "Fullbody":
-            return ["Empuje Horizontal", "Dominante de Rodilla", "Tracción Vertical", "Dominante de Cadera"]
-        elif tipo_rutina == "Torso-Pierna":
-            return ["Empuje Horizontal", "Tracción Vertical", "Empuje Vertical", "Tracción Horizontal"] if sub_dia == "Torso" else ["Dominante de Rodilla", "Dominante de Cadera", "Dominante Unilateral"]
+        if tipo_rutina == "Fullbody": return ["Empuje Horizontal", "Dominante de Rodilla", "Tracción Vertical", "Dominante de Cadera"]
+        elif tipo_rutina == "Torso-Pierna": return ["Empuje Horizontal", "Tracción Vertical", "Empuje Vertical"] if sub_dia == "Torso" else ["Dominante de Rodilla", "Dominante de Cadera", "Dominante Unilateral"]
         elif tipo_rutina == "Push-Pull-Legs (PPL)":
             if sub_dia == "Push (Empuje)": return ["Empuje Horizontal", "Empuje Vertical"]
             elif sub_dia == "Pull (Tracción)": return ["Tracción Vertical", "Tracción Horizontal"]
             else: return ["Dominante de Rodilla", "Dominante de Cadera"]
-        else:  # Weider
-            return ["Empuje Horizontal", "Empuje Vertical", "Tracción Vertical", "Dominante de Rodilla"]
+        else: return ["Empuje Horizontal", "Empuje Vertical", "Tracción Vertical", "Dominante de Rodilla"]
 
     @staticmethod
     def sustituir_ejercicio(ejercicio_actual: Ejercicio, equipamiento_disponible: List[str]) -> Optional[Ejercicio]:
         candidatos = [
-            e for e in BASE_EJERCICIOS
-            if e.id != ejercicio_actual.id
-            and e.bloque == ejercicio_actual.bloque
+            e for e in st.session_state.base_ejercicios
+            if e.id != ejercicio_actual.id and e.bloque == ejercicio_actual.bloque
             and (e.patron_movimiento == ejercicio_actual.patron_movimiento or e.musculo_principal == ejercicio_actual.musculo_principal)
-            and e.estres_articular <= ejercicio_actual.estres_articular
-            and e.equipamiento in equipamiento_disponible
+            and e.estres_articular <= ejercicio_actual.estres_articular and e.equipamiento in equipamiento_disponible
         ]
         candidatos.sort(key=lambda x: x.estres_articular)
         return candidatos[0] if candidatos else None
 
     @staticmethod
     def generar_rutina_completa(atleta: PerfilAtleta, sub_dia: str, score_wellness: float) -> Dict[str, List[Dict]]:
-        rutina_bloques = {"Bloque A": [], "Bloque B": [], "Bloque C": [], "Bloque D": []}
+        rutina_bloques = {"Warm-Up": [], "Bloque B": [], "Bloque C": [], "Bloque D": []}
         params_obj = MotorEntrenamiento.obtener_parametros_objetivo(atleta.objetivo)
-        
         mod_series = -1 if score_wellness < 3.0 else 0
         mod_rir = +2 if score_wellness < 3.0 else 0
         patrones_sesion = MotorEntrenamiento.filtrar_patrones_por_rutina(atleta.tipo_rutina, sub_dia)
 
-        # BLOQUE A: Movilidad / Pliometría
-        movilidad = [e for e in BASE_EJERCICIOS if e.bloque == "Bloque A" and e.equipamiento in atleta.equipamiento_disponible]
-        if atleta.es_deportista:
-            movilidad.sort(key=lambda x: not x.es_atletico)
-        for ej in movilidad[:2]:
-            rutina_bloques["Bloque A"].append({
-                "nombre": ej.nombre, "patron": ej.patron_movimiento,
-                "detalles": "2 Series x 8-10 Reps | RIR 4 (Control dinámico)",
-                "estres": ej.estres_articular, "equipo": ej.equipamiento, "atletico": ej.es_atletico
+        # WARM-UP OBLIGATORIO
+        warmup = [e for e in st.session_state.base_ejercicios if e.bloque == "Warm-Up" and e.equipamiento in atleta.equipamiento_disponible]
+        if atleta.es_deportista: warmup.sort(key=lambda x: not x.es_atletico)
+        for ej in warmup[:3]:
+            rutina_bloques["Warm-Up"].append({
+                "id": ej.id, "nombre": ej.nombre, "patron": ej.patron_movimiento,
+                "detalles": "2 Series x 10 Reps (Dinámico / Movilidad)",
+                "estres": ej.estres_articular, "equipo": ej.equipamiento, "video": ej.url_video, "atletico": ej.es_atletico
             })
 
-        # BLOQUE B: Principales / Potencia
-        principales = [e for e in BASE_EJERCICIOS if e.bloque == "Bloque B" and (e.patron_movimiento in patrones_sesion or (atleta.es_deportista and e.es_atletico)) and e.equipamiento in atleta.equipamiento_disponible]
+        # BLOQUE B
+        principales = [e for e in st.session_state.base_ejercicios if e.bloque == "Bloque B" and (e.patron_movimiento in patrones_sesion or (atleta.es_deportista and e.es_atletico)) and e.equipamiento in atleta.equipamiento_disponible]
         for ej in principales[:2]:
             series = 4 if atleta.musculo_especializacion and ej.musculo_principal == atleta.musculo_especializacion else 3
             series_finales = max(2, int(series * params_obj["factor_volumen"]) + mod_series)
             rutina_bloques["Bloque B"].append({
-                "nombre": ej.nombre, "patron": ej.patron_movimiento,
-                "detalles": f"{series_finales} Series x {params_obj['reps_b']} Reps | RIR {params_obj['rir_base'] + mod_rir}",
-                "estres": ej.estres_articular, "equipo": ej.equipamiento, "atletico": ej.es_atletico
+                "id": ej.id, "nombre": ej.nombre, "patron": ej.patron_movimiento,
+                "detalles": f"{series_finales} Series x {params_obj['reps_b']} Reps | RIR Prescripto: {params_obj['rir_base'] + mod_rir}",
+                "estres": ej.estres_articular, "equipo": ej.equipamiento, "video": ej.url_video, "atletico": ej.es_atletico
             })
 
-        # BLOQUE C: Secundarios
-        secundarios = [e for e in BASE_EJERCICIOS if e.bloque == "Bloque C" and e.equipamiento in atleta.equipamiento_disponible]
+        # BLOQUE C
+        secundarios = [e for e in st.session_state.base_ejercicios if e.bloque == "Bloque C" and e.equipamiento in atleta.equipamiento_disponible]
         for ej in secundarios[:2]:
             series_finales = max(2, int(3 * params_obj["factor_volumen"]) + mod_series)
             rutina_bloques["Bloque C"].append({
-                "nombre": ej.nombre, "patron": ej.patron_movimiento,
-                "detalles": f"{series_finales} Series x {params_obj['reps_c']} Reps | RIR {params_obj['rir_base'] + mod_rir + 1}",
-                "estres": ej.estres_articular, "equipo": ej.equipamiento, "atletico": ej.es_atletico
+                "id": ej.id, "nombre": ej.nombre, "patron": ej.patron_movimiento,
+                "detalles": f"{series_finales} Series x {params_obj['reps_c']} Reps | RIR Prescripto: {params_obj['rir_base'] + mod_rir + 1}",
+                "estres": ej.estres_articular, "equipo": ej.equipamiento, "video": ej.url_video, "atletico": ej.es_atletico
             })
 
-        # BLOQUE D: Accesorios
-        accesorios = [e for e in BASE_EJERCICIOS if e.bloque == "Bloque D" and e.equipamiento in atleta.equipamiento_disponible]
+        # BLOQUE D
+        accesorios = [e for e in st.session_state.base_ejercicios if e.bloque == "Bloque D" and e.equipamiento in atleta.equipamiento_disponible]
         for ej in accesorios[:2]:
             series_acc = 4 if atleta.musculo_especializacion and ej.musculo_principal == atleta.musculo_especializacion else 3
             series_finales = max(2, int(series_acc * params_obj["factor_volumen"]) + mod_series)
             rutina_bloques["Bloque D"].append({
-                "nombre": ej.nombre, "patron": ej.patron_movimiento,
-                "detalles": f"{series_finales} Series x {params_obj['reps_d']} Reps | RIR {params_obj['rir_base'] + mod_rir}",
-                "estres": ej.estres_articular, "equipo": ej.equipamiento, "atletico": ej.es_atletico
+                "id": ej.id, "nombre": ej.nombre, "patron": ej.patron_movimiento,
+                "detalles": f"{series_finales} Series x {params_obj['reps_d']} Reps | RIR Prescripto: {params_obj['rir_base'] + mod_rir}",
+                "estres": ej.estres_articular, "equipo": ej.equipamiento, "video": ej.url_video, "atletico": ej.es_atletico
             })
 
         return rutina_bloques
@@ -205,15 +189,18 @@ class MotorEntrenamiento:
 # 4. INTERFAZ GRÁFICA DE USUARIO
 # ==========================================
 
-st.title("🏋️ ProGym Engine v3.0 — Automatización por Objetivos y Perfil")
+st.title("🏋️ ProGym Engine v4.0 — Control Completo")
 
-# Sidebar
-st.sidebar.header("👤 Configuración del Perfil")
+# Rol Switcher
+st.sidebar.header("🔑 Control de Acceso")
+rol_usuario = st.sidebar.radio("Rol Actual", ["Alumno / Deportista", "Profesor / Entrenador"])
+
+st.sidebar.divider()
+st.sidebar.header("👤 Perfil & Parámetros")
 nombre = st.sidebar.text_input("Nombre Usuario", "Carlos Pérez")
-es_deportista = st.sidebar.checkbox("🏅 Es Deportista de Rendimiento", value=False)
-
+es_deportista = st.sidebar.checkbox("🏅 Perfil Deportivo de Alto Rendimiento", value=False)
 tipo_rutina = st.sidebar.selectbox("Modalidad de Rutina", ["Fullbody", "Torso-Pierna", "Push-Pull-Legs (PPL)", "Weider"])
-objetivo = st.sidebar.selectbox("Objetivo del Entrenamiento", ["Hipertrofia", "Pérdida de Grasa / Definición", "Rendimiento Deportivo / Performance", "Mantenimiento / Salud"])
+objetivo = st.sidebar.selectbox("Objetivo", ["Hipertrofia", "Pérdida de Grasa / Definición", "Rendimiento Deportivo / Performance", "Mantenimiento / Salud"])
 especializacion = st.sidebar.selectbox("Especialización Muscular", [None, "Pectoral", "Cuádriceps", "Dorsal", "Deltoides", "Isquiosurales"])
 
 equipamiento = st.sidebar.multiselect(
@@ -224,97 +211,137 @@ equipamiento = st.sidebar.multiselect(
 
 st.sidebar.divider()
 st.sidebar.header("📊 Wellness Pre-Entreno")
-sueno = st.sidebar.slider("Sueño (1 Malo - 5 Excelente)", 1, 5, 4)
-estres = st.sidebar.slider("Estrés (1 Alto - 5 Muy Bajo)", 1, 5, 3)
-agujetas = st.sidebar.slider("Agujetas (1 Altas - 5 Nulas)", 1, 5, 3)
-fatiga = st.sidebar.slider("Fatiga General (1 Alta - 5 Nula)", 1, 5, 3)
+sueno = st.sidebar.slider("Sueño (1-5)", 1, 5, 4)
+estres = st.sidebar.slider("Estrés (1-5)", 1, 5, 3)
+agujetas = st.sidebar.slider("Agujetas (1-5)", 1, 5, 3)
+fatiga = st.sidebar.slider("Fatiga General (1-5)", 1, 5, 3)
 
-atleta = PerfilAtleta(
-    nombre=nombre, tipo_rutina=tipo_rutina, objetivo=objetivo,
-    es_deportista=es_deportista, musculo_especializacion=especializacion, equipamiento_disponible=equipamiento
-)
+atleta = PerfilAtleta(nombre=nombre, tipo_rutina=tipo_rutina, objetivo=objetivo, es_deportista=es_deportista, musculo_especializacion=especializacion, equipamiento_disponible=equipamiento)
 score_wellness = atleta.evaluar_wellness(sueno, estres, agujetas, fatiga)
 
-# Banner superior
+# Banner de estado
 col_w1, col_w2 = st.columns([1, 3])
-with col_w1:
-    st.metric("Puntuación Wellness", f"{score_wellness} / 5.0")
+with col_w1: st.metric("Score Wellness", f"{score_wellness} / 5.0")
 with col_w2:
-    if score_wellness < 3.0:
-        st.error("⚠️ **Autorregulación por Fatiga:** Se reduce volumen (-1 serie) e intensidad (+2 RIR).")
-    else:
-        st.success(f"✅ **Estado Óptimo:** Generando rutina optimizada para **{objetivo}** ({tipo_rutina}).")
+    if score_wellness < 3.0: st.error("⚠️ **Autorregulación por Fatiga:** Volumen e intensidad ajustados.")
+    else: st.success(f"✅ Modo **{rol_usuario}** activo | {objetivo} ({tipo_rutina})")
 
 st.divider()
 
-# Pestañas Principales
-tab_rutina, tab_remplazo, tab_database = st.tabs(["📋 Rutina Generada", "🔄 Reemplazo Inteligente", "📚 Base de Datos"])
+# Pestañas
+tab_rutina, tab_plan, tab_crud, tab_remplazo = st.tabs(["📋 Sesión Diaria & Feedback", "🗓️ Plan Semanal/Mensual", "🛠️ Banco de Ejercicios (Profesor)", "🔄 Sustitución Rápida"])
 
+# PESTAÑA 1: RUTINA & FEEDBACK
 with tab_rutina:
     sub_dia = "General"
-    if tipo_rutina == "Torso-Pierna":
-        sub_dia = st.radio("Selecciona el día de la sesión:", ["Torso", "Pierna"], horizontal=True)
-    elif tipo_rutina == "Push-Pull-Legs (PPL)":
-        sub_dia = st.radio("Selecciona el día de la sesión:", ["Push (Empuje)", "Pull (Tracción)", "Legs (Pierna)"], horizontal=True)
+    if tipo_rutina == "Torso-Pierna": sub_dia = st.radio("Día:", ["Torso", "Pierna"], horizontal=True)
+    elif tipo_rutina == "Push-Pull-Legs (PPL)": sub_dia = st.radio("Día:", ["Push (Empuje)", "Pull (Tracción)", "Legs (Pierna)"], horizontal=True)
 
-    if st.button("⚡ Generar Rutina Automatizada", type="primary"):
-        rutina = MotorEntrenamiento.generar_rutina_completa(atleta, sub_dia, score_wellness)
-        
-        # BLOQUE A
-        st.markdown('<div class="block-container-card block-a"><h3>BLOQUE A: Movilidad y Pliometría / Activación</h3></div>', unsafe_allow_html=True)
-        for item in rutina["Bloque A"]:
-            badge_atl = '<span class="badge badge-athletic">Deportivo</span>' if item['atletico'] else ''
-            st.markdown(f"**{item['nombre']}** — *{item['patron']}* | {badge_atl} <span class='badge badge-equip'>{item['equipo']}</span>", unsafe_allow_html=True)
-            st.caption(f"📌 Prescripción: {item['detalles']}")
-        
-        # BLOQUE B
-        st.markdown('<div class="block-container-card block-b"><h3>BLOQUE B: Ejercicios Principales / Potencia</h3></div>', unsafe_allow_html=True)
-        for item in rutina["Bloque B"]:
-            badge_atl = '<span class="badge badge-athletic">Deportivo</span>' if item['atletico'] else ''
-            st.markdown(f"**{item['nombre']}** — *{item['patron']}* | {badge_atl} <span class='badge badge-stress'>Estrés Articular: {item['estres']}/5</span> | <span class='badge badge-equip'>{item['equipo']}</span>", unsafe_allow_html=True)
-            st.caption(f"📌 Prescripción: {item['detalles']}")
-
-        # BLOQUE C
-        st.markdown('<div class="block-container-card block-c"><h3>BLOQUE C: Ejercicios Secundarios</h3></div>', unsafe_allow_html=True)
-        for item in rutina["Bloque C"]:
-            st.markdown(f"**{item['nombre']}** — *{item['patron']}* | <span class='badge badge-equip'>{item['equipo']}</span>", unsafe_allow_html=True)
-            st.caption(f"📌 Prescripción: {item['detalles']}")
-
-        # BLOQUE D
-        st.markdown('<div class="block-container-card block-d"><h3>BLOQUE D: Accesorios y Salud Articular</h3></div>', unsafe_allow_html=True)
-        for item in rutina["Bloque D"]:
-            st.markdown(f"**{item['nombre']}** — *{item['patron']}* | <span class='badge badge-equip'>{item['equipo']}</span>", unsafe_allow_html=True)
-            st.caption(f"📌 Prescripción: {item['detalles']}")
-
-with tab_remplazo:
-    st.subheader("Sustitución de Ejercicio Ocupado o Con Molestia")
-    ej_seleccionado_nombre = st.selectbox("Selecciona el ejercicio a sustituir:", [e.nombre for e in BASE_EJERCICIOS])
+    rutina = MotorEntrenamiento.generar_rutina_completa(atleta, sub_dia, score_wellness)
     
-    if st.button("Buscar Alternativa Inteligente"):
-        obj_ej = next(e for e in BASE_EJERCICIOS if e.nombre == ej_seleccionado_nombre)
-        reemplazo = MotorEntrenamiento.sustituir_ejercicio(obj_ej, atleta.equipamiento_disponible)
-        
-        if reemplazo:
-            st.success(f"✔️ **Sustituto Encontrado:** {reemplazo.nombre}")
-            st.write(f"- **Bloque:** {reemplazo.bloque}")
-            st.write(f"- **Músculo Principal:** {reemplazo.musculo_principal}")
-            st.write(f"- **Equipamiento:** {reemplazo.equipamiento}")
-            st.write(f"- **Estrés Articular:** {reemplazo.estres_articular}/5")
-        else:
-            st.warning("No hay alternativas disponibles para ese patrón con el equipamiento seleccionado.")
+    # Renderizador de bloques
+    def render_bloque(titulo: str, lista_ejercicios: List[Dict], css_class: str):
+        st.markdown(f'<div class="block-card {css_class}"><h3>{titulo}</h3></div>', unsafe_allow_html=True)
+        for item in lista_ejercicios:
+            col_info, col_feed = st.columns([2, 1])
+            with col_info:
+                st.markdown(f"**{item['nombre']}** — *{item['patron']}* | <span class='badge badge-equip'>{item['equipo']}</span>", unsafe_allow_html=True)
+                st.caption(f"📌 {item['detalles']}")
+                if item["video"]:
+                    with st.expander("🎥 Ver Técnica en Video"):
+                        st.video(item["video"])
+            with col_feed:
+                if rol_usuario == "Alumno / Deportista":
+                    st.text_input(f"Carga / Reps Reales ({item['id']})", placeholder="Ej: 80kg x 8", key=f"c_{item['id']}")
+                    st.select_slider(f"RIR Percibido ({item['id']})", options=[0, 1, 2, 3, 4, 5], value=1, key=f"r_{item['id']}")
+                else:
+                    st.info("🔒 Registro reservado para el alumno")
+            st.divider()
 
-with tab_database:
-    st.subheader("Catálogo Completo de Ejercicios")
-    tabla_datos = [
-        {
-            "Bloque": e.bloque,
-            "Nombre": e.nombre,
-            "Patrón": e.patron_movimiento,
-            "Músculo Principal": e.musculo_principal,
-            "Perfil Deportivo": "Sí" if e.es_atletico else "No",
-            "Equipamiento": e.equipamiento,
-            "Estrés Articular": f"{e.estres_articular}/5"
-        }
-        for e in BASE_EJERCICIOS
-    ]
+    render_bloque("🔥 WARM-UP & MOVILIDAD (OBLIGATORIO)", rutina["Warm-Up"], "block-warmup")
+    render_bloque("BLOQUE B: Ejercicios Principales / Potencia", rutina["Bloque B"], "block-b")
+    render_bloque("BLOQUE C: Ejercicios Secundarios", rutina["Bloque C"], "block-c")
+    render_bloque("BLOQUE D: Accesorios & Salud Articular", rutina["Bloque D"], "block-d")
+
+    if rol_usuario == "Alumno / Deportista":
+        if st.button("💾 Guardar Feedback de la Sesión", type="primary"):
+            st.success("✅ Registro guardado correctamente. Tu entrenador podrá visualizar tus observaciones.")
+
+# PESTAÑA 2: PLAN SEMANAL Y MENSUAL
+with tab_plan:
+    st.subheader("🗓️ Planificación del Mesociclo (4 Semanas)")
+    vista_plan = st.radio("Seleccionar Vista", ["Vista Semanal (Microciclo)", "Vista Mensual (Mesociclo)"], horizontal=True)
+
+    if vista_plan == "Vista Semanal (Microciclo)":
+        dias = ["Lunes (Día 1)", "Martes (Día 2)", "Miércoles (Descanso)", "Jueves (Día 3)", "Viernes (Día 4)", "Sábado (Cardio/Activo)", "Domingo (Descanso)"]
+        for d in dias:
+            with st.expander(f"📅 {d}"):
+                st.write(f"Planificación asignada según esquema **{tipo_rutina}**.")
+                st.caption("Warm-up obligatorio + 4 ejercicios de carga progresiva.")
+
+    else:
+        prog_mensual = [
+            {"Semana": "Semana 1", "Fase": "Acumulación / Adaptación", "Volumen": "100%", "Intensidad": "RIR 2-3"},
+            {"Semana": "Semana 2", "Fase": "Carga Principal", "Volumen": "110%", "Intensidad": "RIR 1-2"},
+            {"Semana": "Semana 3", "Fase": "Pico de Intensidad", "Volumen": "120%", "Intensidad": "RIR 0-1"},
+            {"Semana": "Semana 4", "Fase": "Descarga / Autorregulación", "Volumen": "50%", "Intensidad": "RIR 3-4"},
+        ]
+        st.table(prog_mensual)
+
+# PESTAÑA 3: BANCO DE EJERCICIOS (CRUD PROFESOR)
+with tab_crud:
+    st.subheader("🛠️ Administración de la Base de Datos de Ejercicios")
+    
+    if rol_usuario == "Profesor / Entrenador":
+        st.markdown("### ➕ Agregar Nuevo Ejercicio")
+        with st.form("form_nuevo_ejercicio"):
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                n_id = st.text_input("ID Ejercicio", f"EX{len(st.session_state.base_ejercicios)+1}")
+                n_nombre = st.text_input("Nombre Ejercicio", "Press Declinado con Mancuernas")
+                n_bloque = st.selectbox("Bloque", ["Warm-Up", "Bloque B", "Bloque C", "Bloque D"])
+            with col2:
+                n_patron = st.selectbox("Patrón de Movimiento", ["Empuje Horizontal", "Empuje Vertical", "Tracción Vertical", "Tracción Horizontal", "Dominante de Rodilla", "Dominante de Cadera", "Movilidad Cadera", "Movilidad Hombros", "Aislamiento"])
+                n_musculo = st.text_input("Músculo Principal", "Pectoral")
+                n_equipo = st.selectbox("Equipamiento", ["Barra", "Mancuernas", "Máquina", "Polea", "Peso Corporal", "Banda elástica"])
+            with col3:
+                n_estres = st.slider("Estrés Articular (1-5)", 1, 5, 2)
+                n_url = st.text_input("URL de Video (YouTube)", "https://www.youtube.com/watch?v=...")
+                n_atletico = st.checkbox("¿Es para Deportistas?", value=False)
+            
+            btn_guardar = st.form_submit_button("Guardar Ejercicio")
+            if btn_guardar:
+                nuevo_ej = Ejercicio(n_id, n_nombre, n_bloque, n_patron, n_musculo, [], n_equipo, n_estres, n_url, n_atletico)
+                st.session_state.base_ejercicios.append(nuevo_ej)
+                st.success(f"✔️ Ejercicio '{n_nombre}' agregado exitosamente.")
+
+        st.divider()
+        st.markdown("### ❌ Eliminar Ejercicio")
+        ej_eliminar = st.selectbox("Selecciona ejercicio a eliminar:", [e.nombre for e in st.session_state.base_ejercicios])
+        if st.button("Eliminar Ejercicio Seleccionado"):
+            st.session_state.base_ejercicios = [e for e in st.session_state.base_ejercicios if e.nombre != ej_eliminar]
+            st.success(f"Ejercicio '{ej_eliminar}' eliminado de la base de datos.")
+
+    else:
+        st.warning("🔒 Solo el perfil **Profesor / Entrenador** tiene permisos para modificar o agregar ejercicios a la base de datos.")
+
+    # Vista General de la Base
+    st.subheader("📚 Catálogo Actual de Ejercicios")
+    tabla_datos = [{
+        "ID": e.id, "Bloque": e.bloque, "Nombre": e.nombre, "Patrón": e.patron_movimiento,
+        "Músculo Principal": e.musculo_principal, "Equipo": e.equipamiento, "Estrés": f"{e.estres_articular}/5", "Video": "Sí" if e.url_video else "No"
+    } for e in st.session_state.base_ejercicios]
     st.dataframe(tabla_datos, use_container_width=True)
+
+# PESTAÑA 4: SUSTITUCIÓN RÁPIDA
+with tab_remplazo:
+    st.subheader("🔄 Sustitución de Ejercicio Ocupado o Con Molestia")
+    ej_sel = st.selectbox("Selecciona el ejercicio a cambiar:", [e.nombre for e in st.session_state.base_ejercicios])
+    if st.button("Buscar Alternativa Inteligente"):
+        obj_ej = next(e for e in st.session_state.base_ejercicios if e.nombre == ej_sel)
+        reemplazo = MotorEntrenamiento.sustituir_ejercicio(obj_ej, atleta.equipamiento_disponible)
+        if reemplazo:
+            st.success(f"✔️ **Sustituto Sugerido:** {reemplazo.nombre}")
+            st.write(f"- **Bloque:** {reemplazo.bloque} | **Equipo:** {reemplazo.equipamiento} | **Estrés Articular:** {reemplazo.estres_articular}/5")
+            if reemplazo.url_video: st.video(reemplazo.url_video)
+        else: st.warning("No hay alternativas disponibles para el equipamiento seleccionado.")
