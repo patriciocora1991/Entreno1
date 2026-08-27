@@ -4,58 +4,69 @@ from typing import List, Dict, Optional
 import datetime
 
 # ==========================================
-# 1. ESTILOS VISUALES: TEXTO BLANCO, SECUNDARIO VERDE & TARJETAS
+# 1. ESTILOS VISUALES RESPONSIVOS (PC & MÓVIL)
 # ==========================================
 
-st.set_page_config(page_title="ProGym Engine v7.0 - Maximum Robustness", page_icon="⚡", layout="wide")
+st.set_page_config(page_title="Vislux (Lic. Cora Patricio)", page_icon="⚡", layout="wide")
 
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Montserrat:wght@700;900&display=swap');
 
-    /* Estructura general */
+    /* Fondo principal y textos base */
     .stApp {
         background-color: #080b11;
         color: #ffffff !important;
-        font-family: 'Inter', sans-serif;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
     }
     
-    /* Textos Principales */
-    h1, h2, h3, h4, strong, b, .stMarkdown p {
+    /* Textos Principales en Blanco Puro */
+    h1, h2, h3, h4, h5, h6, strong, b, .main-title {
         color: #ffffff !important;
+        font-family: 'Montserrat', sans-serif;
     }
     
-    /* Textos Secundarios (Verde Neón) */
-    .stCaption, caption, .secondary-text, small, span.st-c6 {
+    /* TEXTOS SECUNDARIOS EN VERDE NEÓN (DENTRO Y FUERA DE RECUADROS) */
+    .stCaption, caption, .secondary-text, small, span.st-c6, p small, 
+    label, .stSlider label, .stRadio label, .stSelectbox label, .stMultiSelect label, 
+    .stTextInput label, .stNumberInput label, .stWidgetLabel, .green-sec,
+    [data-testid="stMarkdownContainer"] p small, .stMarkdown p small,
+    .stMarkdown sub, .stMarkdown sup, .stMarkdown em, div[data-testid="stWidgetLabel"] p {
         color: #00ff88 !important;
-        font-weight: 600;
+        font-weight: 600 !important;
     }
 
-    /* Sidebars */
+    /* Párrafos estándar */
+    .stMarkdown p {
+        color: #f1f5f9;
+    }
+
+    /* Sidebar personalizado */
     [data-testid="stSidebar"] {
         background-color: #0f172a;
         border-right: 2px solid #00ff88;
     }
 
-    /* Tarjetas Generales con Recuadros Marcados */
+    /* Tarjetas Generales Adaptables a Pantallas */
     .card-box {
         border: 2px solid #00ff88;
         background-color: #0f172a;
         border-radius: 12px;
-        padding: 1.2rem;
-        margin-bottom: 1.2rem;
+        padding: 1.1rem 1.3rem;
+        margin-bottom: 1.1rem;
         box-shadow: 0 0 15px rgba(0, 255, 136, 0.15);
+        word-wrap: break-word;
     }
     
     /* Tarjetas de Bloques de Entrenamiento */
     .block-card {
-        padding: 1.4rem;
+        padding: 1.1rem 1.3rem;
         border-radius: 12px;
-        margin-bottom: 1.3rem;
+        margin-bottom: 1.1rem;
         background-color: #0f172a;
         border: 2px solid #00e676;
         color: #ffffff;
-        box-shadow: 0 0 20px rgba(0, 230, 118, 0.2);
+        box-shadow: 0 0 18px rgba(0, 230, 118, 0.2);
     }
     .block-warmup { border-color: #00ff88; }
     .block-b { border-color: #00e5ff; }
@@ -65,11 +76,12 @@ st.markdown("""
     /* Badges Técnicos */
     .badge {
         display: inline-block;
-        padding: 0.35em 0.75em;
-        font-size: 80%;
+        padding: 0.35em 0.65em;
+        font-size: 0.78rem;
         font-weight: 700;
         border-radius: 6px;
         margin-right: 6px;
+        margin-bottom: 4px;
         color: #000000 !important;
         text-transform: uppercase;
     }
@@ -77,29 +89,50 @@ st.markdown("""
     .badge-athletic { background-color: #00ff88; }
     .badge-iso { background-color: #ff0055; color: #ffffff !important; }
 
-    /* Botones primarios */
+    /* Botones Neón Responsivos */
     .stButton>button {
+        width: 100%;
         background: linear-gradient(90deg, #00ff88 0%, #00e5ff 100%);
         color: #000000 !important;
         font-family: 'Montserrat', sans-serif;
         font-weight: 900;
         border: none;
         border-radius: 8px;
-        padding: 0.7rem 1.5rem;
+        padding: 0.75rem 1.2rem;
         text-transform: uppercase;
-        box-shadow: 0 0 15px rgba(0, 255, 136, 0.4);
+        box-shadow: 0 0 15px rgba(0, 255, 136, 0.35);
         transition: all 0.3s ease;
     }
     .stButton>button:hover {
         opacity: 0.95;
         transform: translateY(-2px);
-        box-shadow: 0 0 25px rgba(0, 229, 255, 0.6);
+        box-shadow: 0 0 25px rgba(0, 229, 255, 0.55);
+    }
+
+    /* ADAPTACIÓN MÓVIL Y SMARTPHONES */
+    @media (max-width: 768px) {
+        .card-box {
+            padding: 0.8rem 0.9rem;
+            margin-bottom: 0.85rem;
+            border-width: 1.5px;
+        }
+        .block-card {
+            padding: 0.8rem 0.9rem;
+            margin-bottom: 0.85rem;
+        }
+        h1 { font-size: 1.6rem !important; }
+        h2 { font-size: 1.3rem !important; }
+        h3 { font-size: 1.1rem !important; }
+        .stButton>button {
+            padding: 0.65rem 1rem;
+            font-size: 0.85rem;
+        }
     }
 </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 2. MODELOS DE DATOS & BASE AMPLIA (+100 EJERCICIOS)
+# 2. MODELOS DE DATOS & BASE DE EJERCICIOS
 # ==========================================
 
 @dataclass
@@ -118,7 +151,7 @@ class Ejercicio:
 
 if "base_ejercicios" not in st.session_state:
     st.session_state.base_ejercicios = [
-        # --- WARM-UP & MOVILIDAD (+20 EJERCICIOS) ---
+        # --- WARM-UP & MOVILIDAD ---
         Ejercicio("W1", "Gato-Camello Dinámico", "Warm-Up", "Warm-Up / Movilidad", "Zona Media", "Peso Corporal", 1, False),
         Ejercicio("W2", "World's Greatest Stretch", "Warm-Up", "Warm-Up / Movilidad", "Cadera/Isquios", "Peso Corporal", 1, True),
         Ejercicio("W3", "Dislocaciones de Hombro con Banda", "Warm-Up", "Warm-Up / Movilidad", "Manguito Rotador", "Banda elástica", 1, False),
@@ -140,7 +173,7 @@ if "base_ejercicios" not in st.session_state:
         Ejercicio("W19", "Puente de Glúteo Unilateral Dinámico", "Warm-Up", "Warm-Up / Movilidad", "Glúteo", "Peso Corporal", 1, False),
         Ejercicio("W20", "Estiramiento Dinámico de Isquios en Bipedestación", "Warm-Up", "Warm-Up / Movilidad", "Isquiosurales", "Peso Corporal", 1, True),
 
-        # --- POTENCIA & PLIOMETRÍA / RFD (+20 EJERCICIOS) ---
+        # --- POTENCIA & PLIOMETRÍA / RFD ---
         Ejercicio("P1", "Saltos Pliométricos al Cajón", "Bloque B", "Potencia / RFD", "Tren Inferior", "Peso Corporal", 2, False, "", True),
         Ejercicio("P2", "Drop Jumps (Pliometría Reactiva)", "Bloque B", "Potencia / RFD", "Tríceps Sural", "Peso Corporal", 3, False, "", True),
         Ejercicio("P3", "Lanzamiento Balón Medicinal Medial", "Bloque B", "Potencia / RFD", "Core/Rotadores", "Balón Medicinal", 2, False, "", True),
@@ -162,7 +195,7 @@ if "base_ejercicios" not in st.session_state:
         Ejercicio("P19", "Lanzamiento Rotacional de Balón contra Pared", "Bloque B", "Potencia / RFD", "Oblicuos/Core", "Balón Medicinal", 2, False, "", True),
         Ejercicio("P20", "Depth Jump con Aterrizaje Unilateral", "Bloque B", "Potencia / RFD", "Estabilidad Rodilla", "Peso Corporal", 4, False, "", True),
 
-        # --- ISOMÉTRICOS (PUSH, CATCH, HOLD) (+15 EJERCICIOS) ---
+        # --- ISOMÉTRICOS (PUSH, CATCH, HOLD) ---
         Ejercicio("I1", "Iso Push: Press de Banca contra Pines", "Bloque B", "Isométrico", "Pectoral", "Barra", 3, False, "", True, True),
         Ejercicio("I2", "Iso Push: Sentadilla en Punto Estático contra Topes", "Bloque B", "Isométrico", "Cuádriceps", "Barra", 4, False, "", True, True),
         Ejercicio("I3", "Iso Catch: Aterrizaje Caída desde Cajón (Landing)", "Bloque B", "Isométrico", "Cuádriceps/Tobillo", "Peso Corporal", 3, False, "", True, True),
@@ -179,7 +212,7 @@ if "base_ejercicios" not in st.session_state:
         Ejercicio("I14", "Iso Push: Press Militar contra Pines en 90°", "Bloque B", "Isométrico", "Deltoides", "Barra", 3, False, "", True, True),
         Ejercicio("I15", "Iso Hold: Extensión de Espalda 45° con Peso", "Bloque D", "Isométrico", "Erectores Espinales", "Peso Corporal", 1, False, "", False, True),
 
-        # --- PATRONES CLÁSICOS DE ENTRENAMIENTO (+35 EJERCICIOS) ---
+        # --- PATRONES CLÁSICOS ---
         Ejercicio("E1", "Press de Banca Plano con Barra", "Bloque B", "Empuje Horizontal", "Pectoral Mayor", "Barra", 4, False),
         Ejercicio("E2", "Press Inclinado 30° con Mancuernas", "Bloque B", "Empuje Horizontal", "Pectoral Clavicular", "Mancuernas", 3, True),
         Ejercicio("E3", "Press Militar de Pie con Barra", "Bloque B", "Empuje Vertical", "Deltoides Anterior", "Barra", 4, False),
@@ -212,7 +245,7 @@ if "historial_feedback" not in st.session_state:
     st.session_state.historial_feedback = []
 
 # ==========================================
-# 3. MOTOR DE PROGRAMACIÓN ROBUSTA
+# 3. LÓGICA DE PROGRAMACIÓN Y AUTORREGULACIÓN
 # ==========================================
 
 @dataclass
@@ -227,7 +260,7 @@ class PerfilAtleta:
     def evaluar_wellness(self, sueno: int, estres: int, agujetas: int, fatiga: int) -> float:
         return round(((min(max(sueno, 1), 5)) + (6 - min(max(estres, 1), 5)) + (6 - min(max(agujetas, 1), 5)) + (6 - min(max(fatiga, 1), 5))) / 4.0, 2)
 
-class MotorEntrenamientoRobusto:
+class MotorEntrenamientoVislux:
 
     @staticmethod
     def obtener_parametros(objetivo: str) -> Dict[str, str]:
@@ -238,7 +271,7 @@ class MotorEntrenamientoRobusto:
     @staticmethod
     def generar_rutina(atleta: PerfilAtleta, score_wellness: float) -> Dict[str, List[Dict]]:
         rutina = {"Warm-Up": [], "Bloque B": [], "Bloque C": [], "Bloque D": []}
-        params = MotorEntrenamientoRobusto.obtener_parametros(atleta.objetivo)
+        params = MotorEntrenamientoVislux.obtener_parametros(atleta.objetivo)
         mod_series = -1 if score_wellness < 3.0 else 0
         mod_rir = +2 if score_wellness < 3.0 else 0
 
@@ -286,19 +319,21 @@ class MotorEntrenamientoRobusto:
         return rutina
 
 # ==========================================
-# 4. INTERFAZ GRÁFICA ROBUSTA
+# 4. INTERFAZ Y NAVEGACIÓN
 # ==========================================
 
-st.title("⚡ ProGym Engine v7.0 — Performance & Science UI")
+# TÍTULO PRINCIPAL VISLUX
+st.markdown('<h1 class="main-title">⚡ Vislux <span style="font-size: 0.6em; color: #00ff88; font-weight: 600;">(Lic. Cora Patricio)</span></h1>', unsafe_allow_html=True)
+st.markdown('<p style="color:#00ff88; font-weight:600; margin-top:-15px;">Sistema Inteligente de Programación y Rendimiento Deportivo</p>', unsafe_allow_html=True)
 
-# Control de Rol (Login Docente Simplificado Interno)
+# BARRA LATERAL (SIDEBAR)
 st.sidebar.markdown('<div class="card-box">', unsafe_allow_html=True)
 st.sidebar.subheader("👤 Seleccionar Rol")
 rol_usuario = st.sidebar.radio("Modo de Uso:", ["Alumno / Deportista", "Profesor / Entrenador"])
 st.sidebar.markdown('</div>', unsafe_allow_html=True)
 
 st.sidebar.markdown('<div class="card-box">', unsafe_allow_html=True)
-st.sidebar.subheader("📋 Configuración del Atleta")
+st.sidebar.subheader("📋 Datos del Atleta")
 nombre = st.sidebar.text_input("Nombre del Atleta", "Carlos Pérez")
 es_deportista = st.sidebar.checkbox("🏅 Atleta de Alto Rendimiento", value=True)
 tipo_rutina = st.sidebar.selectbox("Formato de Rutina", ["Fullbody", "Torso-Pierna", "Push-Pull-Legs (PPL)", "Weider"])
@@ -322,51 +357,52 @@ st.sidebar.markdown('</div>', unsafe_allow_html=True)
 atleta = PerfilAtleta(nombre=nombre, tipo_rutina=tipo_rutina, objetivo=objetivo, es_deportista=es_deportista, equipamiento_disponible=equipamiento)
 score_wellness = atleta.evaluar_wellness(sueno, estres, agujetas, fatiga)
 
-# Banner Principal con Recuadro
+# RECUADRO SUPERIOR DE ESTADO
 st.markdown('<div class="card-box">', unsafe_allow_html=True)
 col_w1, col_w2 = st.columns([1, 3])
-with col_w1: st.metric("Score Wellness", f"{score_wellness} / 5.0")
+with col_w1: 
+    st.metric("Score Wellness", f"{score_wellness} / 5.0")
 with col_w2:
     if score_wellness < 3.0: 
-        st.write("⚠️ **Autorregulación Activa:** Reducción de carga y aumento de RIR por fatiga acumulada.")
+        st.markdown("<p style='color:#00ff88; font-weight:700;'>⚠️ Autorregulación Activa: Reducción de carga y incremento de RIR por fatiga detectada.</p>", unsafe_allow_html=True)
     else: 
-        st.write(f"✅ **Estado Óptimo:** Atleta listo para máxima intensidad | **{objetivo}**")
+        st.markdown(f"<p style='color:#00ff88; font-weight:700;'>✅ Estado Óptimo: Preparado para sesión de alta intensidad | {objetivo}</p>", unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
-# Pestañas
+# PESTAÑAS
 tab_rutina, tab_docente, tab_plan, tab_crud = st.tabs([
     "📋 Sesión Diaria & Feedback",
-    "👨‍🏫 Panel Docente (Comentarios)",
+    "👨‍🏫 Panel Docente",
     "🗓️ Programación Semanal",
-    "🛠️ Banco Masivo & Carga Docente"
+    "🛠️ Banco & Carga Docente"
 ])
 
 # ==========================================
 # PESTAÑA 1: SESIÓN DIARIA & FEEDBACK
 # ==========================================
 with tab_rutina:
-    rutina = MotorEntrenamientoRobusto.generar_rutina(atleta, score_wellness)
+    rutina = MotorEntrenamientoVislux.generar_rutina(atleta, score_wellness)
     inputs_feedback = {}
 
     def render_bloque(titulo: str, lista_ejercicios: List[Dict], css_class: str):
         st.markdown(f'<div class="block-card {css_class}"><h3>{titulo}</h3></div>', unsafe_allow_html=True)
         for item in lista_ejercicios:
             st.markdown('<div class="card-box">', unsafe_allow_html=True)
-            col_info, col_feed = st.columns([2, 1])
+            col_info, col_feed = st.columns([1.8, 1.2])
             with col_info:
                 badge_atl = '<span class="badge badge-athletic">Atleta / RFD</span>' if item['atletico'] else ''
                 badge_iso = '<span class="badge badge-iso">Isométrico</span>' if item['iso'] else ''
                 st.markdown(f"### {item['nombre']}")
-                st.markdown(f"**Patrón:** {item['patron']} | {badge_atl} {badge_iso} <span class='badge badge-equip'>{item['equipo']}</span>", unsafe_allow_html=True)
-                st.caption(f"📌 Prescripción: {item['detalles']}")
+                st.markdown(f"<p style='color:#00ff88; font-weight:600;'>Patrón: {item['patron']} {badge_atl} {badge_iso} <span class='badge badge-equip'>{item['equipo']}</span></p>", unsafe_allow_html=True)
+                st.markdown(f"<p style='color:#00ff88; font-weight:600;'>📌 Prescripción: {item['detalles']}</p>", unsafe_allow_html=True)
                 if item["video"]:
-                    with st.expander("🎥 Ver Video"):
+                    with st.expander("🎥 Ver Demostración"):
                         st.video(item["video"])
             with col_feed:
-                st.markdown("**📝 Registro de Trabajo:**")
-                carga_reps = st.text_input(f"Carga / Reps / Segundos ({item['id']})", placeholder="Ej: 100kg x 5 reps o 10s", key=f"c_{item['id']}")
-                rir_rpe = st.select_slider(f"Esfuerzo Percibido ({item['id']})", options=["RIR 0", "RIR 1", "RIR 2", "RIR 3", "RIR 4+"], value="RIR 1", key=f"r_{item['id']}")
-                nota = st.text_input(f"Observaciones ({item['id']})", placeholder="Molestias, sensaciones...", key=f"n_{item['id']}")
+                st.markdown("<p style='color:#00ff88; font-weight:700; margin-bottom: 2px;'>📝 Registro de Carga:</p>", unsafe_allow_html=True)
+                carga_reps = st.text_input(f"Carga / Reps ({item['id']})", placeholder="Ej: 80kg x 6 reps", key=f"c_{item['id']}")
+                rir_rpe = st.select_slider(f"Esfuerzo ({item['id']})", options=["RIR 0", "RIR 1", "RIR 2", "RIR 3", "RIR 4+"], value="RIR 1", key=f"r_{item['id']}")
+                nota = st.text_input(f"Notas ({item['id']})", placeholder="Sensaciones...", key=f"n_{item['id']}")
                 
                 inputs_feedback[item['nombre']] = {
                     "ejercicio_id": item['id'],
@@ -381,7 +417,7 @@ with tab_rutina:
     render_bloque("BLOQUE C: Hipertrofia Mediada por Estiramiento & Iso Holds", rutina["Bloque C"], "block-c")
     render_bloque("BLOQUE D: Accesorios & Trabajo de Core", rutina["Bloque D"], "block-d")
 
-    if st.button("💾 Registrar y Enviar Entrenamiento al Entrenador"):
+    if st.button("💾 Registrar y Enviar Entrenamiento al Profesor"):
         registro_sesion = {
             "fecha": str(datetime.date.today()),
             "alumno": nombre,
@@ -390,34 +426,34 @@ with tab_rutina:
             "detalles_ejercicios": inputs_feedback
         }
         st.session_state.historial_feedback.append(registro_sesion)
-        st.success("✅ Entrenamiento guardado en la plataforma. Tu entrenador ya tiene acceso.")
+        st.success("✅ Entrenamiento guardado en Vislux. Lic. Cora Patricio ya tiene acceso.")
 
 # ==========================================
 # PESTAÑA 2: PANEL DOCENTE
 # ==========================================
 with tab_docente:
     st.markdown('<div class="card-box">', unsafe_allow_html=True)
-    st.subheader("👨‍🏫 Panel de Control del Entrenador")
+    st.subheader("👨‍🏫 Panel del Lic. Cora Patricio")
+    st.markdown("<p style='color:#00ff88; font-weight:600;'>Revisión de rendimiento y feedback personalizado para alumnos y atletas.</p>", unsafe_allow_html=True)
     
     if rol_usuario == "Profesor / Entrenador":
-        st.write("### 📥 Historial Completo de Devoluciones y Comentarios")
-        
+        st.markdown("### 📥 Devoluciones de Alumnos")
         if not st.session_state.historial_feedback:
-            st.info("No hay registros de alumnos guardados aún.")
+            st.info("No hay registros de entrenamiento recibidos aún.")
         else:
             for idx, reg in enumerate(reversed(st.session_state.historial_feedback)):
                 st.markdown('<div class="card-box">', unsafe_allow_html=True)
-                st.write(f"**Alumno:** {reg['alumno']} | **Fecha:** {reg['fecha']} | **Formato:** {reg['rutina']}")
+                st.markdown(f"**Alumno:** {reg['alumno']} | **Fecha:** {reg['fecha']} | **Formato:** {reg['rutina']}")
                 for ej_nombre, datos in reg["detalles_ejercicios"].items():
                     if datos["carga_reps"] or datos["nota"]:
-                        st.markdown(f"- **{ej_nombre}**: {datos['carga_reps']} | Presión: **{datos['rir_rpe']}** | *Nota: {datos['nota']}*")
+                        st.markdown(f"- **{ej_nombre}**: {datos['carga_reps']} | RIR: **{datos['rir_rpe']}** | *Nota: {datos['nota']}*")
                 
-                st.text_area(f"✍️ Observación Docente / Feedback para el Alumno", key=f"resp_prof_{idx}")
-                if st.button(f"Guardar Feedback #{idx}"):
-                    st.success("Observación guardada correctamente.")
+                st.text_area(f"✍️ Feedback del Lic. Cora Patricio", key=f"resp_prof_{idx}")
+                if st.button(f"Enviar Devolución #{idx}"):
+                    st.success("Feedback guardado correctamente.")
                 st.markdown('</div>', unsafe_allow_html=True)
     else:
-        st.info("Cambia tu rol a **Profesor / Entrenador** en la barra lateral para ver las devoluciones.")
+        st.info("Cambia tu rol a **Profesor / Entrenador** en la barra lateral para acceder a la gestión de devoluciones.")
     st.markdown('</div>', unsafe_allow_html=True)
 
 # ==========================================
@@ -425,29 +461,40 @@ with tab_docente:
 # ==========================================
 with tab_plan:
     st.markdown('<div class="card-box">', unsafe_allow_html=True)
-    st.subheader("🗓️ Programación Semanal de Performance")
-    dias = ["Lunes (Empuje / Potencia RFD)", "Martes (Tracción / Iso Holds)", "Miércoles (Recuperación / Movilidad)", "Jueves (Dominante Rodilla / Pliometría)", "Viernes (Dominante Cadera / Fuerza)", "Sábado (Capacidad Atlética)", "Domingo (Descanso Total)"]
+    st.subheader("🗓️ Esquema Semanal de Rendimiento Vislux")
+    st.markdown("<p style='color:#00ff88; font-weight:600;'>Distribución de estímulos y días de descanso dinámico.</p>", unsafe_allow_html=True)
+    
+    dias = [
+        "Lunes (Empuje / Potencia RFD)", 
+        "Martes (Tracción / Iso Holds)", 
+        "Miércoles (Recuperación Activa & Movilidad)", 
+        "Jueves (Dominante de Rodilla / Pliometría)", 
+        "Viernes (Dominante de Cadera / Fuerza)", 
+        "Sábado (Capacidad Atlética Unilateral)", 
+        "Domingo (Descanso Total)"
+    ]
     for d in dias:
         with st.expander(f"📅 {d}"):
-            st.write(f"Estructura orientada a **{objetivo}**.")
-            st.caption("Warm-up dinámico obligatorio + Bloques B, C y D.")
+            st.markdown(f"<p style='color:#00ff88; font-weight:600;'>Estructura adaptada para: {objetivo}</p>", unsafe_allow_html=True)
+            st.write("Warm-Up guiado + Bloque principal B + Trabajo accesorio C/D.")
     st.markdown('</div>', unsafe_allow_html=True)
 
 # ==========================================
-# PESTAÑA 4: BANCO MASIVO & CARGA DOCENTE (CRUD)
+# PESTAÑA 4: BANCO DE EJERCICIOS & CRUD
 # ==========================================
 with tab_crud:
     st.markdown('<div class="card-box">', unsafe_allow_html=True)
-    st.subheader("🛠️ Carga y Gestión de Ejercicios por el Profesor")
+    st.subheader("🛠️ Carga y Modificación de Ejercicios por el Docente")
+    st.markdown("<p style='color:#00ff88; font-weight:600;'>Añade ejercicios personalizados para ampliar la plataforma Vislux.</p>", unsafe_allow_html=True)
     
     if rol_usuario == "Profesor / Entrenador":
-        st.markdown("### ➕ Registrar Nuevo Ejercicio a la Base General")
+        st.markdown("### ➕ Agregar Nuevo Ejercicio")
         with st.form("form_nuevo_ejercicio"):
             col1, col2, col3 = st.columns(3)
             with col1:
                 n_id = st.text_input("ID Ejercicio", f"EX{len(st.session_state.base_ejercicios)+1}")
                 n_nombre = st.text_input("Nombre del Ejercicio", "")
-                n_bloque = st.selectbox("Bloque", ["Warm-Up", "Bloque B", "Bloque C", "Bloque D"])
+                n_bloque = st.selectbox("Bloque asignado", ["Warm-Up", "Bloque B", "Bloque C", "Bloque D"])
             with col2:
                 n_patron = st.selectbox("Categoría / Patrón", [
                     "Warm-Up / Movilidad", "Potencia / RFD", "Isométrico",
@@ -455,34 +502,34 @@ with tab_crud:
                     "Tracción Horizontal", "Dominante de Rodilla", "Dominante de Cadera", "Aislamiento", "Core"
                 ])
                 n_musculo = st.text_input("Músculo Principal", "")
-                n_equipo = st.selectbox("Equipamiento Required", ["Barra", "Mancuernas", "Máquina", "Polea", "Peso Corporal", "Banda elástica", "Balón Medicinal"])
+                n_equipo = st.selectbox("Equipamiento", ["Barra", "Mancuernas", "Máquina", "Polea", "Peso Corporal", "Banda elástica", "Balón Medicinal"])
             with col3:
                 n_estres = st.slider("Estrés Articular (1-5)", 1, 5, 2)
                 n_url = st.text_input("URL Video YouTube", "")
-                n_atletico = st.checkbox("¿Es para Atletismo/Performance?", value=False)
-                n_iso = st.checkbox("¿Es Variante Isométrica (Push/Catch/Hold)?", value=False)
+                n_atletico = st.checkbox("¿Es Deportivo/RFD?", value=False)
+                n_iso = st.checkbox("¿Es Isométrico (Push/Catch/Hold)?", value=False)
             
-            if st.form_submit_button("Añadir a la Base de Datos"):
+            if st.form_submit_button("Guardar en Vislux"):
                 if n_nombre:
                     nuevo_ej = Ejercicio(n_id, n_nombre, n_bloque, n_patron, n_musculo, n_equipo, n_estres, False, n_url, n_atletico, n_iso)
                     st.session_state.base_ejercicios.append(nuevo_ej)
-                    st.success(f"✔️ Ejercicio '{n_nombre}' integrado exitosamente a la plataforma.")
+                    st.success(f"✔️ Ejercicio '{n_nombre}' guardado en la plataforma.")
                 else:
-                    st.error("Por favor completa al menos el nombre del ejercicio.")
+                    st.error("Por favor completa el nombre del ejercicio.")
 
         st.divider()
-        st.markdown("### ❌ Eliminar Ejercicio Existente")
-        ej_eliminar = st.selectbox("Selecciona ejercicio a remover:", [e.nombre for e in st.session_state.base_ejercicios])
-        if st.button("Eliminar de la Plataforma"):
+        st.markdown("### ❌ Remover Ejercicio")
+        ej_eliminar = st.selectbox("Selecciona ejercicio a eliminar:", [e.nombre for e in st.session_state.base_ejercicios])
+        if st.button("Eliminar Ejercicio"):
             st.session_state.base_ejercicios = [e for e in st.session_state.base_ejercicios if e.nombre != ej_eliminar]
-            st.success(f"Ejercicio '{ej_eliminar}' eliminado.")
+            st.success(f"Ejercicio '{ej_eliminar}' removido.")
             st.rerun()
 
     else:
-        st.info("Activa el rol **Profesor / Entrenador** para registrar o modificar los ejercicios de la aplicación.")
+        st.info("Activa el rol **Profesor / Entrenador** en el panel lateral para gestionar ejercicios.")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    st.subheader(f"📚 Base Global ({len(st.session_state.base_ejercicios)} Ejercicios Cargados)")
+    st.subheader(f"📚 Banco Global Vislux ({len(st.session_state.base_ejercicios)} Ejercicios)")
     tabla_datos = [{
         "ID": e.id, "Bloque": e.bloque, "Nombre": e.nombre, "Categoría/Patrón": e.patron_movimiento,
         "Músculo": e.musculo_principal, "Equipo": e.equipamiento, "Estrés": f"{e.estres_articular}/5",
